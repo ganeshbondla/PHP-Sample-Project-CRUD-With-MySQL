@@ -15,8 +15,8 @@
                         {
                             $inputEmail = $_POST['inputEmail'];
                             $inputPassword = $_POST['inputPassword'];
-
-                            $checkUser = mysqli_query($conn,"SELECT * FROM users WHERE user_email = '$inputEmail'");
+ 
+                            $checkUser = mysqli_query($conn,"SELECT * FROM users WHERE user_email = '$inputEmail' AND isDeleted='0'");
                             $checkCount = mysqli_num_rows($checkUser);
 
                             if($checkCount == 0)
@@ -38,12 +38,23 @@
                                     $db_user_name = $row["user_name"];
                                     $db_user_email = $row["user_email"];
                                     $db_user_password = $row["user_password"];
+                                    $db_user_status = $row["status"];
                                 }
 
                                 if($db_user_email == $inputEmail && $db_user_password == $inputPassword)
-                                {
-                                    // True User Dashboard
-                                    header('location:dashboard.php');
+                                {   
+                                    if($db_user_status == 1)
+                                    {
+                                        echo "Your Account Not Active";
+                                    }
+                                    else
+                                    {
+                                        session_start();
+                                    
+                                        $_SESSION['userEmail'] = $db_user_email;
+
+                                        header('location:user/dashboard.php');
+                                    }
                                 }
                                 else
                                 {

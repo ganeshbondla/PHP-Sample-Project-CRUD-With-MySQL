@@ -30,8 +30,8 @@
                             if($checkCountOfUsers == 0)
                             {
                                 //No User
-                                $saveData = "INSERT INTO users(user_id, user_name, user_email, user_mobile, user_password, created_date)
-                                VALUES('$userId','$inputName','$inputEmail','$inputMobile','$inputPassword','$createdDate')"; 
+                                $saveData = "INSERT INTO users(user_id, user_name, user_email, user_mobile, user_password, created_date, status, isDeleted)
+                                VALUES('$userId','$inputName','$inputEmail','$inputMobile','$inputPassword','$createdDate','0','0')"; 
 
                                 $inserData = mysqli_query($conn, $saveData);
 

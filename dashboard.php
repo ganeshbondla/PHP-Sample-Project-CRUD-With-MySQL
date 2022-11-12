@@ -1,5 +1,5 @@
-<?php
+<?php include('config.php'); ?>
+<?php include('sessionVerify.php'); ?>
 
-echo "<h3>Welcome User</h3>";
 
-?>
+

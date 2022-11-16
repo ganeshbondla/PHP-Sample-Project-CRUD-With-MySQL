@@ -2,38 +2,51 @@
 <?php include('../sessionVerify.php'); ?>
 <?php
 
-if(isset($_POST['submitToDo']))
+if(isset($_GET['id']))
+{
+    $editId = $_GET['id'];
+
+    $checkId = "SELECT * FROM todo_list WHERE todo_id='$editId' AND user_id='$session_userId'";
+    $sqlRun = mysqli_query($conn, $checkId);
+    $checkCount = mysqli_num_rows($sqlRun);
+
+    if($checkCount == 0)
+    {
+        header('location:dashboard.php?notFound=true');
+    }
+    else
+    {
+        while($row = mysqli_fetch_array($sqlRun))
+        {
+            $db_todoId = $row['todo_id'];
+            $db_todoTitle = $row['todo_title'];
+            $db_todoDate = $row['todo_date'];
+            $db_todoDesc = $row['todo_desc'];
+        }
+    }
+
+}
+else
+{
+    header('location:dashboard.php');
+}
+
+?>
+<?php
+
+if(isset($_POST['updateData']))
 {
     $ToDoTitleInput = $_POST['ToDoTitleInput'];
     $ToDoDateInput = $_POST['ToDoDateInput'];
     $ToDoDesc = $_POST['ToDoDesc'];
 
-    $toDo_id = rand(10000,99999);
+    $updateQuery = "UPDATE todo_list SET todo_title = '$ToDoTitleInput', todo_date='$ToDoDateInput', todo_desc='$ToDoDesc' WHERE todo_id='$editId'";
 
-    $checkTitle = mysqli_query($conn,"SELECT * FROM todo_list WHERE todo_title='$ToDoTitleInput' AND isDeleted='0'");
+    $runQuery = mysqli_query($conn,$updateQuery);
 
-    $checkExistingCount = mysqli_num_rows($checkTitle);
+    echo "<script>alert('Updated Success!')</script>";
 
-    if($checkExistingCount == 0)
-    {
-        //Insert New Todo
-        $insertNewTodo = mysqli_query($conn,"INSERT INTO todo_list(todo_id, user_id, todo_title, todo_date, todo_desc, created_date, isDeleted)
-        VALUES('$toDo_id','$session_userId','$ToDoTitleInput','$ToDoDateInput','$ToDoDesc','$date','0')");
-
-        if(!$insertNewTodo)
-        {
-           echo "<script>alert('Error!')</script>";
-        }
-        else
-        {
-            echo "<script>alert('ToDo Added Success!')</script>";
-            header('refresh:0');
-        }
-    }
-    else
-    {
-        echo "<script>alert('Change Title!')</script>";
-    }
+    header( "refresh:2;url=dashboard.php");
 }
 
 ?>
@@ -48,7 +61,7 @@ if(isset($_POST['submitToDo']))
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>GDA - Dashboard</title>
+    <title>GDA - Edit ToDo</title>
 
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -176,53 +189,29 @@ if(isset($_POST['submitToDo']))
 
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">List of TO DO's</h1>
-                        <a href="#" data-toggle="modal" data-target="#addToDoModal" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                                class="fas fa-plus fa-sm text-white-50"></i> Add New Todo</a>
+                        <h1 class="h3 mb-0 text-gray-800">Edit Todo</h1>
+                        <a href="dashboard.php" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                                class="fas fa-plus fa-sm text-white-50"></i> Back to List</a>
                     </div>
 
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">Edit Details</h6>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive">
-                            <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr>
-                                            <th>Id</th>
-                                            <th>Title</th>
-                                            <th>Date</th>
-                                            <th>Description</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php
-                                            $hereTheResults = mysqli_query($conn,"SELECT * FROM todo_list WHERE isDeleted='0' AND user_id='$session_userId'");
-                                            while($row = mysqli_fetch_array($hereTheResults))
-                                            {
-                                                $db_todoId = $row['todo_id'];
-                                                $db_todoTitle = $row['todo_title'];
-                                                $db_todoDate = $row['todo_date'];
-                                                $db_todoDesc = $row['todo_desc'];
-
-                                                echo '
-                                                <tr>
-
-                                                <td>#'.$db_todoId.'</td>
-                                                <td><b>'.$db_todoTitle.'</b></td>
-                                                <td>'.$db_todoDate.'</td>
-                                                <td>'.$db_todoDesc.'</td>
-                                                <td> <a href="editToDo.php?id='.$db_todoId.'"><i class="fas fa-edit"></i></a> <a href="deleteTodo.php?id='.$db_todoId.'"><i class="ml-3 fas fa-trash-alt"></i></a> </td>
-                                                
-                                                </tr>';
-                                            }
-                                        ?>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <form action="" method="POST">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="ToDoTitleInput" id="ToDoTitleInput" value="<?php echo $db_todoTitle; ?>" placeholder="Enter Title">
+                                </div>
+                                <div class="form-group">
+                                    <input type="date" class="form-control" name="ToDoDateInput" id="ToDoDateInput" value="<?php echo $db_todoDate; ?>" placeholder="Enter Date">
+                                </div>
+                                <div class="form-group">
+                                    <textarea class="form-control" id="ToDoDesc" name="ToDoDesc" placeholder="Enter Desc..." rows="3"><?php echo $db_todoDesc; ?></textarea>
+                                </div>
+                                <button type="submit" name="updateData" class="btn btn-block btn-primary">Update Data</button>
+                            </form>
                         </div>
                     </div>
 
